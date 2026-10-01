@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SubTrack</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    .app-header {
+      background-color: #333;
+      color: white;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .app-header h1 {
+      font-size: 26px;
+      white-space: nowrap;
+    }
+
+    .app-header p {
+      font-size: 14px;
+      opacity: 0.75;
+      border-left: 1px solid rgba(255,255,255,0.3);
+      padding-left: 20px;
+    }
+
+    .app-container {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      max-width: 900px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 40px;
+    }
+
+    .sidebar {
+      width: 300px;
+      flex-shrink: 0;
+    }
+
+    .dashboard {
+      flex: 1;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    .total-banner {
+      background-color: #333;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 15px;
+      display: none;
+    }
+
+    .search-and-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .search-bar {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: white;
+    }
+
+    .search-bar:focus {
+      outline: none;
+      border-color: #333;
+    }
+
+    .controls {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+    }
+
+    .controls select {
+      margin-left: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #aaa;
+      font-size: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+    }
+
+    .add-form {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"] {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .error-text {
+      color: #e03131;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .button:hover { background-color: #555; }
+
+    .button-reset {
+      background-color: white;
+      border: 1px solid #333;
+      padding: 7px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .button-reset:hover { background-color: #f1f1f1; }
+
+    .subscription-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    .card h3 { margin-bottom: 5px; }
+    .card h3 span { font-weight: normal; font-size: 14px; }
+
+    .card-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .button-small {
+      background-color: white;
+      border: 1px solid #333;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .button-delete {
+      background-color: transparent;
+      border: none;
+      color: #999;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .button-delete:hover {
+      color: #e03131;
+      background-color: #ffe3e3;
+    }
+
+    .billing-date { font-size: 12px; color: #777; margin-top: 4px; }
+
+    .status-red { background-color: #ffe3e3; border-left: 6px solid #e03131; }
+    .status-yellow { background-color: #fff3bf; border-left: 6px solid #f59f00; }
+    .status-green { background-color: #d8f5a2; border-left: 6px solid #66a80f; }
+
+    .free-trial { background-color: #fff4e6; border: 2px dashed #ff922b; }
+    .warning-text { color: #d9480f; font-weight: bold; font-size: 15px; }
+    .alert { font-size: 13px; margin-top: 8px; font-style: italic; opacity: 0.8; }
+
+    @media (max-width: 600px) {
+      .app-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; }
+      .app-header p { border-left: none; padding-left: 0; }
+      .app-container { flex-direction: column; padding: 0 20px; margin: 20px auto; }
+      .sidebar { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <h1>📋 SubTrack</h1>
+    <p>Sleduj své předplatné, odhal co nevyužíváš a přestaň plýtvat penězi.</p>
+  </header>
+
+  <div class="app-container">
+    <div class="sidebar">
+      <h2>Přidat předplatné</h2>
+      <form class="add-form" id="add-form">
+        <p class="error-text" id="error-text" style="display:none;"></p>
+
+        <label>📺 Název (např. Netflix)</label>
+        <input type="text" id="input-name" />
+
+        <label>💰 Měsíční cena (Kč)</label>
+        <input type="number" id="input-price" min="0" />
+
+        <label>📅 Datum platby</label>
+        <input type="date" id="input-date" />
+
+        <label class="checkbox-label">
+          <input type="checkbox" id="input-trial" />
+          Je to zkušební verze zdarma?
+        </label>
+
+        <button type="submit" class="button">Přidat předplatné</button>
+      </form>
+    </div>
+
+    <div class="dashboard">
+      <div class="dashboard-header">
+        <h2>Tvoje aktivní předplatné</h2>
+        <button class="button-reset" id="reset-btn" style="display:none;" >🔄 Resetovat měsíc</button>
+      </div>
+
+      <div class="total-banner" id="total-banner">
+        💸 Celkové měsíční náklady: <strong id="total-cost"></strong>
+      </div>
+
+      <div class="search-and-controls" id="search-controls" style="display:none;">
+        <input class="search-bar" type="text" id="search-bar" placeholder="🔍 Hledat předplatné..." />
+        <div class="controls">
+          <div>
+            <label>Řadit podle: </label>
+            <select id="sort-select">
+              <option value="name">Názvu</option>
+              <option value="price">Ceny</option>
+              <option value="usage">Využití</option>
+            </select>
+          </div>
+          <div>
+            <label>Filtr: </label>
+            <select id="filter-select">
+              <option value="all">Vše</option>
+              <option value="underutilized">Nevyužité</option>
+              <option value="freeTrial">Zkušební verze</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="empty-state" class="empty-state">
+        <p class="empty-icon">📭</p>
+        <p>Zatím žádné předplatné.</p>
+        <p>Přidej první a začni sledovat!</p>
+      </div>
+
+      <ul class="subscription-list" id="subscription-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    let subscriptions = [];
+
+    const form = document.getElementById("add-form");
+    const errorText = document.getElementById("error-text");
+    const list = document.getElementById("subscription-list");
+    const emptyState = document.getElementById("empty-state");
+    const totalBanner = document.getElementById("total-banner");
+    const totalCost = document.getElementById("total-cost");
+    const resetBtn = document.getElementById("reset-btn");
+    const searchBar = document.getElementById("search-bar");
+    const sortSelect = document.getElementById("sort-select");
+    const filterSelect = document.getElementById("filter-select");
+    const searchControls = document.getElementById("search-controls");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("input-name").value.trim();
+      const price = parseFloat(document.getElementById("input-price").value);
+      const date = document.getElementById("input-date").value;
+      const isTrial = document.getElementById("input-trial").checked;
+
+      if (!name) { showError("Zadej prosím název."); return; }
+      if (!price || price <= 0) { showError("Zadej prosím platnou cenu."); return; }
+
+      hideError();
+
+      subscriptions.push({
+        id: Date.now(),
+        name,
+        price,
+        isFreeTrial: isTrial,
+        billingDate: date,
+        timesUsed: 0,
+      });
+
+      form.reset();
+      render();
+    });
+
+    resetBtn.addEventListener("click", function() {
+      subscriptions = subscriptions.map(sub => ({ ...sub, timesUsed: 0 }));
+      render();
+    });
+
+    searchBar.addEventListener("input", render);
+    sortSelect.addEventListener("change", render);
+    filterSelect.addEventListener("change", render);
+
+    function showError(msg) {
+      errorText.textContent = msg;
+      errorText.style.display = "block";
+    }
+
+    function hideError() {
+      errorText.style.display = "none";
+    }
+
+    function render() {
+      const search = searchBar.value.toLowerCase();
+      const sortBy = sortSelect.value;
+      const filterBy = filterSelect.value;
+
+      const hasAny = subscriptions.length > 0;
+      resetBtn.style.display = hasAny ? "block" : "none";
+      totalBanner.style.display = hasAny ? "block" : "none";
+      searchControls.style.display = hasAny ? "flex" : "none";
+
+      const total = subscriptions
+        .filter(s => !s.isFreeTrial)
+        .reduce((sum, s) => sum + s.price, 0);
+      totalCost.textContent = total.toFixed(2) + " Kč";
+
+      let filtered = subscriptions
+        .filter(sub => {
+          if (filterBy === "underutilized") return sub.timesUsed < 5 && !sub.isFreeTrial;
+          if (filterBy === "freeTrial") return sub.isFreeTrial;
+          return true;
+        })
+        .filter(sub => sub.name.toLowerCase().includes(search))
+        .sort((a, b) => {
+          if (sortBy === "price") return b.price - a.price;
+          if (sortBy === "usage") return b.timesUsed - a.timesUsed;
+          return a.name.localeCompare(b.name);
+        });
+
+      list.innerHTML = "";
+
+      if (!hasAny) {
+        emptyState.innerHTML = `<p class="empty-icon">📭</p><p>Zatím žádné předplatné.</p><p>Přidej první a začni sledovat!</p>`;
+        emptyState.style.display = "flex";
+      } else if (filtered.length === 0) {
+        emptyState.innerHTML = `<p class="empty-icon">🔍</p><p>Žádné předplatné neodpovídá hledání.</p>`;
+        emptyState.style.display = "flex";
+      } else {
+        emptyState.style.display = "none";
+        filtered.forEach(sub => {
+          const li = document.createElement("li");
+
+          if (sub.isFreeTrial) {
+            li.className = "card free-trial";
+            li.innerHTML = `
+              <div class="card-info">
+                <h3>${sub.name}</h3>
+                <p class="warning-text">⏳ Zruš před naúčtováním ${sub.price.toFixed(2)} Kč!</p>
+                ${sub.billingDate ? `<p class="billing-date">📅 Účtováno: ${sub.billingDate}</p>` : ""}
+              </div>
+              <button class="button-delete" onclick="deleteSub(${sub.id})">✕</button>
+            `;
+          } else {
+            let usageClass = "status-red";
+            if (sub.timesUsed >= 1 && sub.timesUsed <= 4) usageClass = "status-yellow";
+            if (sub.timesUsed >= 5) usageClass = "status-green";
+
+            let alertMsg = "";
+            if (sub.timesUsed === 0) alertMsg = "0 použití – zvaž zrušení!";
+            else if (sub.timesUsed < 5) alertMsg = "Málo využíváno – zkus to používat víc!";
+            else alertMsg = "Skvělá hodnota!";
+
+            li.className = `card ${usageClass}`;
+            li.innerHTML = `
+              <div class="card-info">
+                <h3>${sub.name} <span>(${sub.price.toFixed(2)} Kč/měs)</span></h3>
+                <p>Použito tento měsíc: <strong>${sub.timesUsed}×</strong></p>
+                ${sub.billingDate ? `<p class="billing-date">📅 Další platba: ${sub.billingDate}</p>` : ""}
+                <p class="alert">${alertMsg}</p>
+              </div>
+              <div class="card-actions">
+                <button class="button-small" onclick="addUse(${sub.id})">+1 použití</button>
+                <button class="button-delete" onclick="deleteSub(${sub.id})">✕</button>
+              </div>
+            `;
+          }
+
+          list.appendChild(li);
+        });
+      }
+    }
+
+    function addUse(id) {
+      subscriptions = subscriptions.map(sub =>
+        sub.id === id ? { ...sub, timesUsed: sub.timesUsed + 1 } : sub
+      );
+      render();
+    }
+
+    function deleteSub(id) {
+      subscriptions = subscriptions.filter(sub => sub.id !== id);
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
